@@ -2,26 +2,13 @@ from firebase_admin import firestore
 from firebase_admin import credentials
 import firebase_admin
 from flask import Flask
-
+from flask import Blueprint
+from server.models.genres import genre_page
 
 app = Flask(__name__)
 
-
+app.register_blueprint(genre_page)
 # Use a service account
-cred = credentials.Certificate('encore-1e5ea-firebase-adminsdk-qrpzn-39bbdd3196.json')
-firebase_admin.initialize_app(cred)
-
-db = firestore.client()
-
-    
-def genres_ref():
-    return db.collection(u'genres')
-
-
-@app.route("/genres")
-def get_genres():
-    docs = genres_ref().stream()
-    return {'genres': [doc.id for doc in docs]}
 
 @app.route("/")
 def main():
