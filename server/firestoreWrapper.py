@@ -12,7 +12,7 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 
-class Collections(object):
+class FirestoreCollections:
 
     @staticmethod
     def chat_rooms_ref():
