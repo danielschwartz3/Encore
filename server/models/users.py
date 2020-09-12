@@ -32,11 +32,12 @@ def do_login():
         .where(u'username', u'===', request.form['username'])\
         .where(u'hashed_password', u'===', request.form['hashed_password'])
 
-    session['logged_in'] = True if user else False
+    # session['logged_in'] = True if user else False
+    session["user.id"] = user if user else None
 
 @user_page.route('/logout', methods=['POST'])
 def do_logout():
-    pass
+    session.pop("user_id", None) 
 
 @user_page.route('/join', methods=['POST'])
 def create_user():
