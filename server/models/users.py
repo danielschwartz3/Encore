@@ -54,13 +54,18 @@ class User(object):
     def __init__(self, hashed_password, handle, email, first_name, last_name):
         self.hashed_password, self.handle, self.email, self.first_name, self.last_name = hashed_password, handle, email, first_name, last_name
         self.score = 1
+        self.genres = []
 
     def to_dict(self):
         return {"hashed_password": self.hashed_password,
                 "handle": self.handle,
                 "email": self.email,
                 "first_name": self.first_name,
-                "last_name": self.last_name}
+                "last_name": self.last_name,
+                "genres": []}
+
 
     def store(self):
         FirestoreCollections.users_ref().add(self.to_dict())
+
+
