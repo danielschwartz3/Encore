@@ -18,11 +18,9 @@ class Collections(object):
     def chat_rooms_ref():
         return db.collection(u'chat_rooms')
 
-
     @staticmethod
     def follows_ref():
         return db.collection(u'follows')
-
 
     @staticmethod
     def friends_ref():
@@ -43,10 +41,7 @@ class Collections(object):
     @staticmethod
     def scheduled_performances_ref():
         return db.collection(u'scheduled_performanes')
-    
+
     @staticmethod
     def users_ref():
         return db.collection(u'users')
-
-
-    
