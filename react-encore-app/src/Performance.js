@@ -24,6 +24,8 @@ export default class Performance extends Component {
     this.joinPerformance = this.joinPerformance.bind(this);
     this.updateRoomNameChange = this.updateRoomNameChange.bind(this);
     this.performanceJoined = this.performanceJoined.bind(this);
+    this.leavePerformance = this.leavePerformance.bind(this);
+    this.detachParticipantTracks = this.detachParticipantTracks(this);
  }
 
  componentDidMount() {
@@ -92,6 +94,20 @@ attachTracks(tracks, container) {
     var tracks = Array.from(participant.tracks.values());
     this.attachTracks(tracks, container);
   }
+ 
+  // Detach Tracks
+  detachTracks(tracks) {
+    tracks.forEach(track => {
+      track.detach().forEach(detachedElement => {
+        detachedElement.remove();
+      });
+    });
+  }
+
+  detachParticipantTracks(participant) {
+    var tracks = Array.from(participant.tracks.values());
+    this.detachTracks(tracks);
+  }
   
   performanceJoined(room) {
     // Called when a participant joins a room
@@ -107,8 +123,47 @@ attachTracks(tracks, container) {
     if (!previewContainer.querySelector('video')) {
       this.attachParticipantTracks(room.localParticipant, previewContainer);
     }
+
+    // TODO: Add performer's tracks
+    // TODO: Add any friends' tracks
+    // this.attachParticipantTracks(participant, this.refs.remoteMedia)
+
+    // Attach participant's tracks if they are with friends
+    room.on('trackAdded', (track, participant) => {
+        var previewContainer = this.refs.remoteMedia;
+        this.attachTracks([track], previewContainer);
+      });
+     
+    // If they remove a track, detach it
+    room.on('trackRemoved', (track, participant) => {
+        this.detachTracks([track]);
+    });
+
+    // If disconnect, detatch tracks
+    room.on('participantDisconnected', participant => {
+        this.detachParticipantTracks(participant);
+    });
+
+    room.on('disconnected', () => {
+        if (this.state.previewTracks) {
+          this.state.previewTracks.forEach(track => {
+            track.stop();
+          });
+        }
+        this.detachParticipantTracks(room.localParticipant);
+        room.participants.forEach(this.detachParticipantTracks);
+        this.state.activeRoom = null;
+        this.setState({ hasJoinedRoom: false, localMediaAvailable: false });
+    });}  
   }
 
+  leavePerformance(){
+        this.state.activeRoom.disconnect();
+        this.setState({
+            hasJoinedRoom: false,
+            localMedia: false,
+        });
+  }
 
  render() {
         /* 
@@ -123,7 +178,7 @@ attachTracks(tracks, container) {
     show `Leave Room` button.
     */
     let joinOrLeaveRoomButton = this.state.hasJoinedRoom ? (
-    <Button secondary={true} onClick={() => alert("Leave Room")}>Leave Performance </Button> ) : (
+    <Button secondary={true} onClick={this.leavePerformance}>Leave Performance </Button> ) : (
     <Button primary={"true"} onClick={this.joinPerformance}>Join Performance</Button>);
     return (
         <div>
