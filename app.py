@@ -5,11 +5,13 @@ from flask import Flask
 from flask import Blueprint
 from server.models.genres import genre_page
 from server.models.feed import feed_page
+from server.models.users import user_page
 
 app = Flask(__name__)
 
 app.register_blueprint(genre_page)
 app.register_blueprint(feed_page)
+app.register_blueprint(user_page)
 # Use a service account
 
 @app.route("/")
