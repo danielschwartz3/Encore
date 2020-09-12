@@ -8,7 +8,7 @@ from server.models.genres import genre_page
 from server.models.performances import performance_page
 from server.models.scheduled_performances import scheduled_performance_page
 from server.models.users import user_page
-from auth.login_manager import LoginManager
+from server.auth.login_manager import LoginManager
 
 app = Flask(__name__)
 
