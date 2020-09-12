@@ -1,7 +1,6 @@
 from flask_login.utils import logout_user
 from server.firestoreWrapper import FirestoreCollections
-from flask import Blueprint, request
-from flask_login import login_user, logout_user
+from flask import Blueprint, request, session
 
 user_page = Blueprint('user_page', __name__)
 
@@ -33,12 +32,12 @@ def do_login():
         .where(u'handle', u'===', request.form['handle'])\
         .where(u'hashed_password', u'===', request.form['hashed_password'])
 
-    user = User.from_dict(user_data.to_dict())
-    login_user(user)
+    # session['logged_in'] = True if user else False
+    session["user.id"] = user if user else None
 
 @user_page.route('/logout', methods=['POST'])
 def do_logout():
-    logout_user()
+    session.pop("user_id", None) 
 
 @user_page.route('/join', methods=['POST'])
 def create_user():

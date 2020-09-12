@@ -23,7 +23,7 @@ def create_performance():
         performance = Performance(user_id, chat_room_id, genres, access_token)
         performance.store()
 
-@performance_page.route('/performances/stop', methods='DELETE')
+@performance_page.route('/performances/stop', methods=['DELETE'])
 def stop_performance():
     pass
 

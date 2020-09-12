@@ -12,7 +12,7 @@ def feed_generator(user_id):
     for performance in reccomended_performances:
         yield performance.to_dict()
 
-@feed_page.route("/feed/<user_id>/next/", method=['GET'])
+@feed_page.route("/feed/<user_id>/next/", methods=['GET'])
 def get_next_video(user_id):
     try:
         return next(feed_generator(user_id))
