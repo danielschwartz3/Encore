@@ -1,4 +1,3 @@
-from flask_login.utils import logout_user
 from server.firestoreWrapper import FirestoreCollections
 from flask import Blueprint, request, session
 from login_required import login_required
