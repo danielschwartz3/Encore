@@ -1,3 +1,5 @@
+from flask import g, request, redirect, url_for
+from functools import wraps
 import firebase_admin
 from firebase_admin import credentials, firestore
 from flask import Blueprint, Flask, request, session
@@ -23,7 +25,6 @@ app.register_blueprint(chat_room_page)
 app.register_blueprint(performance_page)
 app.register_blueprint(scheduled_performance_page)
 # Use a service account
-
 
 
 @app.route("/")
