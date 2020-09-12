@@ -6,27 +6,25 @@ var app = express();
 
 // Endpoint to generate access token
 app.get('/token', function(request, response) {
+    // Until we connect profiles and this, generate fake name
     var identity = faker.name.findName();
  
     // Create an access token which we will sign and return to the client,
     // containing the grant we just created
-    var envToken = new AccessToken(
-        process.env.TWILIO_ACCOUNT_SID,
-        process.env.TWILIO_API_KEY,
-        process.env.TWILIO_API_SECRET
+    var token = new AccessToken(
+        process.env.REACT_APP_TWILIO_ACCOUNT_SID,
+        process.env.REACT_APP_TWILIO_API_KEY,
+        process.env.REACT_APP_TWILIO_API_SECRET
     );
- 
-    // Assign the generated identity to the token
-    envToken.identity = identity;
- 
-    const grant = new VideoGrant();
+    token.identity = identity;
     // Grant token access to the Video API features
-    envToken.addGrant(grant);
- 
+    const grant = new VideoGrant();
+    token.addGrant(grant);
+    token = token.toJwt();
     // Serialize the token to a JWT string and include it in a JSON response
     response.send({
         identity: identity,
-        token: envToken.toJwt()
+        token: token.toJwt(),
     });
  });
 
