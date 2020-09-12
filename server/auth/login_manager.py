@@ -1,7 +1,9 @@
+"""
 from flask_login import LoginManager
 from app import app
 from server.firestoreWrapper import FirestoreCollections
 from server.models.users import User
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -13,3 +15,4 @@ def load_user(user_id):
         return None
     else:
         return User.from_dict(user_data)
+"""

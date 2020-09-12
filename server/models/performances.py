@@ -1,17 +1,18 @@
+from flask_login.utils import login_required
 from server.firestoreWrapper import FirestoreCollections
 from flask import Blueprint, request
 from datetime import datetime
 
 performance_page = Blueprint('performance_page', __name__)
 
-
+@login_required
 @performance_page.route('/performances/all', methods=['GET'])
 def get_all_performances():
     if request.method == 'GET':
         docs = FirestoreCollections.performances_ref().stream()
         return {doc.id: doc.to_dict() for doc in docs}
 
-
+@login_required
 @performance_page.route('/performances/new', methods=['POST'])
 def create_performance():
     if request.method == 'POST':
@@ -23,10 +24,12 @@ def create_performance():
         performance = Performance(user_id, chat_room_id, genres, access_token)
         performance.store()
 
-@performance_page.route('/performances/stop', methods='DELETE')
+@login_required
+@performance_page.route('/performances/stop', methods=['DELETE'])
 def stop_performance():
     pass
 
+@login_required
 @performance_page.route('/performances/join', methods=['POST'])
 def join_performance():
     pass

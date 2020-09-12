@@ -1,17 +1,17 @@
-from flask_login.utils import logout_user
+from flask_login.utils import login_required, logout_user
 from server.firestoreWrapper import FirestoreCollections
 from flask import Blueprint, request
 from flask_login import login_user, logout_user
 
 user_page = Blueprint('user_page', __name__)
 
-
+@login_required
 @user_page.route("/users/all")
 def get_all_users():
     docs = FirestoreCollections.users_ref().stream()
     return {doc.id: doc.to_dict() for doc in docs}
 
-
+@login_required
 @user_page.route("/user/genres", methods=['POST'])
 def choose_genres():
     if request.method == 'POST':
@@ -20,7 +20,7 @@ def choose_genres():
         FirestoreCollections.users_ref().document(
             user_id).set({'genres': genres})
 
-
+@login_required
 @user_page.route("/user/<user_id>", methods=['GET'])
 def get_user(user_id):
     if request.method == 'GET':
@@ -36,9 +36,11 @@ def do_login():
     user = User.from_dict(user_data.to_dict())
     login_user(user)
 
+@login_required
 @user_page.route('/logout', methods=['POST'])
 def do_logout():
     logout_user()
+
 
 @user_page.route('/join', methods=['POST'])
 def create_user():

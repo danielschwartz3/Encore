@@ -1,12 +1,12 @@
+from flask_login.utils import login_required
 from server.firestoreWrapper import FirestoreCollections
 from flask import Blueprint, request
-from datetime import datetime
 
 
 scheduled_performance_page = Blueprint('scheduled_performance_page', __name__)
 
-
-@scheduled_performance_page.routes('/performances/schedule', methods=['POST'])
+#@login_required
+@scheduled_performance_page.route('/performances/schedule', methods=['POST'])
 def schedule_performance():
     if request.method == 'POST':
         datetime = request.form['datetime']

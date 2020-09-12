@@ -1,6 +1,8 @@
-import firebase_admin
+from server.models.users import User
+from server.firestoreWrapper import FirestoreCollections
+from flask_login import LoginManager
 from firebase_admin import credentials, firestore
-from flask import Blueprint, Flask, request, session
+from flask import Flask, Blueprint
 
 from server.models.chat_rooms import chat_room_page
 from server.models.feed import feed_page
@@ -8,7 +10,7 @@ from server.models.genres import genre_page
 from server.models.performances import performance_page
 from server.models.scheduled_performances import scheduled_performance_page
 from server.models.users import user_page
-from server.auth.login_manager import LoginManager
+
 
 app = Flask(__name__)
 
@@ -24,6 +26,18 @@ app.register_blueprint(performance_page)
 app.register_blueprint(scheduled_performance_page)
 # Use a service account
 
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    user_data = FirestoreCollections.users_ref().document(user_id)
+    if not user_data:
+        return None
+    else:
+        return User.from_dict(user_data)
 
 
 @app.route("/")
