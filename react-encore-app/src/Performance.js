@@ -25,7 +25,7 @@ export default class Performance extends Component {
     this.updateRoomNameChange = this.updateRoomNameChange.bind(this);
     this.performanceJoined = this.performanceJoined.bind(this);
     this.leavePerformance = this.leavePerformance.bind(this);
-    this.detachParticipantTracks = this.detachParticipantTracks(this);
+    //this.detachParticipantTracks = this.detachParticipantTracks(this);
  }
 
  componentDidMount() {
@@ -104,10 +104,10 @@ attachTracks(tracks, container) {
     });
   }
 
-  detachParticipantTracks(participant) {
-    var tracks = Array.from(participant.tracks.values());
-    this.detachTracks(tracks);
-  }
+ // detachParticipantTracks(participant) {
+ //   var tracks = Array.from(participant.tracks.values());
+ //   this.detachTracks(tracks);
+ // }
   
   performanceJoined(room) {
     // Called when a participant joins a room
@@ -154,7 +154,7 @@ attachTracks(tracks, container) {
         room.participants.forEach(this.detachParticipantTracks);
         this.state.activeRoom = null;
         this.setState({ hasJoinedRoom: false, localMediaAvailable: false });
-    });}  
+    });
   }
 
   leavePerformance(){
