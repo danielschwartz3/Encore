@@ -46,20 +46,21 @@
 
     socket.on('receive_message', function(data){
         console.log(data);
-        if (data.username !== "{{ user_name }}") {
-            const newNode = document.createElement('div');
-            newNode.innerHTML = `<b>${data.user_name}:&nbsp;</b> ${data.message}`;
+        const newNode = document.createElement('div');
+        newNode.innerHTML = `<b>${data.user_name}:&nbsp;</b> ${data.message}`;
+        if (data.chat_room_id == "{{ chat_room_id }}"){
             document.getElementById('messages').appendChild(newNode);
         }
     });
 
     socket.on('join_room_announcement', function (data) {
         console.log(data);
-        if (data.user_name !== "{{ user_name }}") {
-            const newNode = document.createElement('div');
-            newNode.innerHTML = `<b>${data.user_name}</b> has joined the room`;
-            document.getElementById('messages').appendChild(newNode);
-        }
+        const newNode = document.createElement('div');
+        newNode.innerHTML = `<b>${data.user_name}</b> has joined the room`;
+        if (data.chat_room_id == "{{ chat_room_id }}"){
+             document.getElementById('messages').appendChild(newNode);
+         }
+        
     });
 
 </script>
