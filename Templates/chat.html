@@ -55,7 +55,7 @@
 
     socket.on('join_room_announcement', function (data) {
         console.log(data);
-        if (data.username !== "{{ user_name }}") {
+        if (data.user_name !== "{{ user_name }}") {
             const newNode = document.createElement('div');
             newNode.innerHTML = `<b>${data.user_name}</b> has joined the room`;
             document.getElementById('messages').appendChild(newNode);
