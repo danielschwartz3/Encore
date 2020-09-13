@@ -19,6 +19,7 @@ export default class Performance extends Component {
        localMediaAvailable: false, // assume no connected video/audio?
        hasJoinedRoom: false,
        localTrack: null,
+       participantUniqueName: null,
        joinedRoom: null // keep track of the active, joined room 
     }
     this.joinPerformance = this.joinPerformance.bind(this);
@@ -35,6 +36,36 @@ export default class Performance extends Component {
         this.setState({ identity, token });
     });
  }
+
+/*
+Might move login info over here because I was having trouble passing the userName over
+updateUserName(e){
+        this.setState({
+            identity: e.target.value,
+        })
+    }
+    
+    updatePassword(e){
+        this.setState({
+            password: e.target.value,
+        })
+    }
+
+    login(e){
+        // will probably need to fix
+        fetch('http://127.0.0.1:5000/', {
+            method: 'POST',
+            body: JSON.stringify({
+                userName: this.state.userName,
+                password: md5(this.state.password),
+            })
+        })
+        this.setState({
+            password: "",
+        })
+    }*/
+
+
 
  updateRoomNameChange(e){
     this.setState({
@@ -104,10 +135,10 @@ attachTracks(tracks, container) {
     });
   }
 
- // detachParticipantTracks(participant) {
- //   var tracks = Array.from(participant.tracks.values());
- //   this.detachTracks(tracks);
- // }
+  detachParticipantTracks(participant) {
+    var tracks = Array.from(participant.tracks.values());
+    this.detachTracks(tracks);
+  }
   
   performanceJoined(room) {
     // Called when a participant joins a room
@@ -127,9 +158,36 @@ attachTracks(tracks, container) {
     // TODO: Add performer's tracks
     // TODO: Add any friends' tracks
     // this.attachParticipantTracks(participant, this.refs.remoteMedia)
-    fetch('127.0.0.1:5000')
-      .then(response => response.json());
+    //fetch('127.0.0.1:5000')
+    //  .then(response => response.json());
     //  .then();
+    var performer = null;
+    var friends = [null]
+    
+    const AccessToken = require('twilio').jwt.AccessToken;
+    const VideoGrant = AccessToken.VideoGrant;
+    const videoGrant = new VideoGrant();
+    const token = new AccessToken(
+        process.env.REACT_APP_TWILIO_ACCOUNT_SID,
+        process.env.REACT_APP_TWILIO_API_KEY,
+        process.env.REACT_APP_TWILIO_API_SECRET);
+    token.addGrant(videoGrant);
+    token.identity = this.state.identity;
+    const client = require('twilio')(process.env.REACT_APP_TWILIO_ACCOUNT_SID, token.toJwt());
+
+    var updatedRules = [
+      {"type": "exclude", "all": true},
+      {"type": "include", "publisher": performer.uniqueName}
+    ]   
+    for(var f in friends){
+      updatedRules.push(
+        {"type": "include", "publisher": f.uniqueName});
+    }
+    client.video.rooms(room.sid)
+      .participants.get(this.state.participantUniqueName)
+      .subscriberRules.update({
+        rules: updatedRules
+      })
 
     // Attach participant's tracks if they are with friends
     room.on('trackAdded', (track, participant) => {

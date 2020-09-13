@@ -4,6 +4,9 @@ import axios from 'axios';
 import { Button } from 'reactstrap';
 import TextField from '@material-ui/core/TextField';
 
+/* May be able to make this part of Performance.js
+    I'm not entirely sure how to pass the user's handle across. */
+
 export default class Login extends Component {
     constructor(props){
         super();
