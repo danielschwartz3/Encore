@@ -20,7 +20,7 @@ def choose_genres():
         genres = request.form['genres']
         user_id = request.form['user_id']
         FirestoreCollections.users_ref().document(
-            user_id).set({'genres': genres})
+            user_id).update({'genres': genres})
 
 
 @login_required
@@ -56,6 +56,111 @@ def create_user():
     id = request.form['id']
     new_user = User(hashed_password, handle, email, first_name, last_name, id)
     new_user.store()
+
+
+@login_required
+@user_page.route('/users/add_friend', methods=['POST'])
+def add_friend():
+    my_id = request.form['user_id']
+    friend_id = request.form['friend_id']
+    
+    friends = {'sent_by': my_id, 'to': friend_id, 'active': False}
+    #check if friends exists first
+    FirestoreCollections.friends_ref().add(friends)
+
+
+@login_required
+@user_page.route('/users/accept_friend', methods=['GET'])
+def accept_friend():
+    my_id = request.form['user_id']
+    friend_id = request.form['friend_id']
+
+    user = FirestoreCollections.users_ref().document(my_id)
+    friends = FirestoreCollections.friends_ref().where(
+        'sent_by', '===', friend_id).where('to', '===', my_id)
+    friends.update({'active': True})
+    reciprocal_friends = {'sent_by': my_id, 'to': friend_id, 'active': True}
+    user.update({'friend_count': user.data['friend_count'] + 1})
+    FirestoreCollections.friends_ref().add(reciprocal_friends)
+
+
+@login_required
+@user_page.route('/users/<user_id>/friends', methods=['GET'])
+def get_friends(user_id):
+    return {'friends': [doc.to_dict() for doc in FirestoreCollections.friends_ref().where('sent_by', '===', user_id)]}
+
+@login_required
+@user_page.route('/users/<user_id>/friendcount', methods=['GET'])
+def friend_count(user_id):
+    return {'friend_count': FirestoreCollections.users_ref().document(user_id).data['friend_count']}
+
+
+@login_required
+@user_page.route('/users/unfriend', methods=['POST'])
+def unfriend():
+    my_id = request.form['user_id']
+    friend_id = request.form['friend_id']
+    user = FirestoreCollections.users_ref().document(my_id)
+    reciprocal_friends = FirestoreCollections.friends_ref().where(
+        'sent_by', '===', friend_id).where('to', '===', my_id)
+    friends = FirestoreCollections.friends_ref().where(
+        'sent_by', '===', my_id).where('to', '===', friend_id)
+
+    reciprocal_friends.update({'active': False})
+    friends.update({'active': False})
+    user.update({'friend_count': user.data['friend_count'] - 1})
+
+@login_required
+@user_page.route('/users/add_follower', methods=['POST'])
+def add_follower():
+    my_id = request.form['user_id']
+    follower_id = request.form['follower_id']
+    
+    followers = {'sent_by': my_id, 'to': follower_id, 'active': False}
+    #check if followers exists first
+    FirestoreCollections.followers_ref().add(followers)
+
+
+@login_required
+@user_page.route('/users/accept_follower', methods=['GET'])
+def accept_follower():
+    my_id = request.form['user_id']
+    follower_id = request.form['follower_id']
+
+    user = FirestoreCollections.users_ref().document(my_id)
+    followers = FirestoreCollections.followers_ref().where(
+        'sent_by', '===', follower_id).where('to', '===', my_id)
+    followers.update({'active': True})
+    reciprocal_followers = {'sent_by': my_id, 'to': follower_id, 'active': True}
+    user.update({'follower_count': user.data['follower_count'] + 1})
+    FirestoreCollections.followers_ref().add(reciprocal_followers)
+
+
+@login_required
+@user_page.route('/users/<user_id>/followers', methods=['GET'])
+def get_followers(user_id):
+    return {'followers': [doc.to_dict() for doc in FirestoreCollections.followers_ref().where('sent_by', '===', user_id)]}
+
+@login_required
+@user_page.route('/users/<user_id>/followercount', methods=['GET'])
+def follower_count(user_id):
+    return {'follower_count': FirestoreCollections.users_ref().document(user_id).data['follower_count']}
+
+
+@login_required
+@user_page.route('/users/unfollow', methods=['POST'])
+def unfollow():
+    my_id = request.form['user_id']
+    follower_id = request.form['follower_id']
+    user = FirestoreCollections.users_ref().document(my_id)
+    reciprocal_followers = FirestoreCollections.followers_ref().where(
+        'sent_by', '===', follower_id).where('to', '===', my_id)
+    followers = FirestoreCollections.followers_ref().where(
+        'sent_by', '===', my_id).where('to', '===', follower_id)
+
+    reciprocal_followers.update({'active': False})
+    followers.update({'active': False})
+    user.update({'follower_count': user.data['follower_count'] - 1})
 
 
 class User(object):

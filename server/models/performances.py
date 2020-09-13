@@ -32,7 +32,7 @@ def create_performance():
 def stop_performance():
     performance_id = request.form['performance_id']
     FirestoreCollections.performances_ref().document(
-        performance_id).set({'is_active': False})
+        performance_id).update({'is_active': False})
 
 
 @performance_page.route('/performances/join', methods=['POST'])
@@ -40,9 +40,12 @@ def join_performance():
     performance_id = request.form['performance_id']
     user_id = request.form['user_id']
     performance = FirestoreCollections.performances_ref().document(performance_id)
+    total_views = performance.data['total_views']
+    current_views = performance.data['current_views']
     audience = performance.data['audience'].append(user_id)
-    performance.set({'audience': audience})
-
+    performance.update({'audience': audience})
+    performance.update({'total_views': total_views + 1})
+    performance.update({'current_views': current_views + 1})
 
 
 @performance_page.route('/performances/join', methods=['POST'])
@@ -50,9 +53,24 @@ def leave_performance():
     performance_id = request.form['performance_id']
     user_id = request.form['user_id']
     performance = FirestoreCollections.performances_ref().document(performance_id)
+    total_views = performance.data['total_views']
     audience = performance.data['audience']
     audience.remove(user_id)
-    performance.set({'audience': audience})
+    performance.update({'audience': audience})
+    performance.update({'total_views': total_views - 1})
+
+
+@performance_page.route('/performances/<performance_id>/total_views', methods=['GET'])
+def performance_total_views(performance_id):
+    performance = FirestoreCollections.performances_ref().document(performance_id)
+    total_views = performance.data['total_views']
+    return {'total_views': total_views}
+
+@performance_page.route('/performances/<performance_id>/viewcount', methods=['GET'])
+def performance_current_views(performance_id):
+    performance = FirestoreCollections.performances_ref().document(performance_id)
+    current_views = performance.data['current_views']
+    return {'current_views': current_views}
 
 
 class Performance:
@@ -65,6 +83,8 @@ class Performance:
         self.title = title
         self.audience = []
         self.is_active = is_active
+        self.total_views = 0
+        self.current_views = 0
 
     def to_dict(self):
         return {'host_id': self.host_id,
@@ -74,7 +94,9 @@ class Performance:
                 'access_token': self.access_token,
                 'title': self.title,
                 'audience': self.audience,
-                'is_active': self.is_active}
+                'is_active': self.is_active,
+                'total_views': self.total_views,
+                'current_views': self.current_views}
 
     def store(self):
         FirestoreCollections.performances_ref().add(self.to_dict())
