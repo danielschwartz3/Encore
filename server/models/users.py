@@ -7,14 +7,14 @@ user_page = Blueprint('user_page', __name__)
 
 
 @login_required
-@user_page.route("/users/all")
+@user_page.route("/api/users/all")
 def get_all_users():
     docs = FirestoreCollections.users_ref().stream()
     return {doc.id: doc.to_dict() for doc in docs}
 
 
 @login_required
-@user_page.route("/user/genres", methods=['POST'])
+@user_page.route("/api/user/genres", methods=['POST'])
 def choose_genres():
     if request.method == 'POST':
         genres = request.form['genres']
@@ -24,7 +24,7 @@ def choose_genres():
 
 
 @login_required
-@user_page.route("/user/<user_id>", methods=['GET'])
+@user_page.route("/api/user/<user_id>", methods=['GET'])
 def get_user(user_id):
     if request.method == 'GET':
         return FirestoreCollections.users_ref().document(user_id).to_dict()
@@ -46,7 +46,7 @@ def do_logout():
     session.pop("user_id", None)
 
 
-@user_page.route('/join', methods=['POST'])
+@user_page.route('/api/join', methods=['POST'])
 def create_user():
     hashed_password = request.form['hashed_password']
     handle = request.form['handle']
@@ -59,7 +59,7 @@ def create_user():
 
 
 @login_required
-@user_page.route('/users/add_friend', methods=['POST'])
+@user_page.route('/api/users/add_friend', methods=['POST'])
 def add_friend():
     my_id = request.form['user_id']
     friend_id = request.form['friend_id']
@@ -70,7 +70,7 @@ def add_friend():
 
 
 @login_required
-@user_page.route('/users/accept_friend', methods=['GET'])
+@user_page.route('/api/users/accept_friend', methods=['GET'])
 def accept_friend():
     my_id = request.form['user_id']
     friend_id = request.form['friend_id']
@@ -85,18 +85,18 @@ def accept_friend():
 
 
 @login_required
-@user_page.route('/users/<user_id>/friends', methods=['GET'])
+@user_page.route('/api/users/<user_id>/friends', methods=['GET'])
 def get_friends(user_id):
     return {'friends': [doc.to_dict() for doc in FirestoreCollections.friends_ref().where('sent_by', '===', user_id)]}
 
 @login_required
-@user_page.route('/users/<user_id>/friendcount', methods=['GET'])
+@user_page.route('/api/users/<user_id>/friendcount', methods=['GET'])
 def friend_count(user_id):
     return {'friend_count': FirestoreCollections.users_ref().document(user_id).data['friend_count']}
 
 
 @login_required
-@user_page.route('/users/unfriend', methods=['POST'])
+@user_page.route('/api/users/unfriend', methods=['POST'])
 def unfriend():
     my_id = request.form['user_id']
     friend_id = request.form['friend_id']
@@ -111,7 +111,7 @@ def unfriend():
     user.update({'friend_count': user.data['friend_count'] - 1})
 
 @login_required
-@user_page.route('/users/add_follower', methods=['POST'])
+@user_page.route('/api/users/add_follower', methods=['POST'])
 def add_follower():
     my_id = request.form['user_id']
     follower_id = request.form['follower_id']
@@ -122,7 +122,7 @@ def add_follower():
 
 
 @login_required
-@user_page.route('/users/accept_follower', methods=['GET'])
+@user_page.route('/api/users/accept_follower', methods=['GET'])
 def accept_follower():
     my_id = request.form['user_id']
     follower_id = request.form['follower_id']
@@ -137,18 +137,18 @@ def accept_follower():
 
 
 @login_required
-@user_page.route('/users/<user_id>/followers', methods=['GET'])
+@user_page.route('/api/users/<user_id>/followers', methods=['GET'])
 def get_followers(user_id):
     return {'followers': [doc.to_dict() for doc in FirestoreCollections.followers_ref().where('sent_by', '===', user_id)]}
 
 @login_required
-@user_page.route('/users/<user_id>/followercount', methods=['GET'])
+@user_page.route('/api/users/<user_id>/followercount', methods=['GET'])
 def follower_count(user_id):
     return {'follower_count': FirestoreCollections.users_ref().document(user_id).data['follower_count']}
 
 
 @login_required
-@user_page.route('/users/unfollow', methods=['POST'])
+@user_page.route('/api/users/unfollow', methods=['POST'])
 def unfollow():
     my_id = request.form['user_id']
     follower_id = request.form['follower_id']

@@ -5,7 +5,7 @@ from login_required import login_required
 performance_page = Blueprint('performance_page', __name__)
 
 
-@performance_page.route('/performances/all', methods=['GET'])
+@performance_page.route('/api/performances/all', methods=['GET'])
 def get_all_performances():
     if request.method == 'GET':
         docs = FirestoreCollections.performances_ref().where(u'is_active' '===', True)
@@ -13,7 +13,7 @@ def get_all_performances():
 
 
 @login_required
-@performance_page.route('/performances/new', methods=['POST'])
+@performance_page.route('/api/performances/new', methods=['POST'])
 def create_performance():
     if request.method == 'POST':
         user_id = request.form['user_id']
@@ -28,14 +28,14 @@ def create_performance():
 
 
 @login_required
-@performance_page.route('/performances/stop', methods=['POST'])
+@performance_page.route('/api/performances/stop', methods=['POST'])
 def stop_performance():
     performance_id = request.form['performance_id']
     FirestoreCollections.performances_ref().document(
         performance_id).update({'is_active': False})
 
 
-@performance_page.route('/performances/join', methods=['POST'])
+@performance_page.route('/api/performances/join', methods=['POST'])
 def join_performance():
     performance_id = request.form['performance_id']
     user_id = request.form['user_id']
@@ -48,7 +48,7 @@ def join_performance():
     performance.update({'current_views': current_views + 1})
 
 
-@performance_page.route('/performances/join', methods=['POST'])
+@performance_page.route('/api/performances/join', methods=['POST'])
 def leave_performance():
     performance_id = request.form['performance_id']
     user_id = request.form['user_id']
@@ -60,13 +60,13 @@ def leave_performance():
     performance.update({'total_views': total_views - 1})
 
 
-@performance_page.route('/performances/<performance_id>/total_views', methods=['GET'])
+@performance_page.route('/api/performances/<performance_id>/total_views', methods=['GET'])
 def performance_total_views(performance_id):
     performance = FirestoreCollections.performances_ref().document(performance_id)
     total_views = performance.data['total_views']
     return {'total_views': total_views}
 
-@performance_page.route('/performances/<performance_id>/viewcount', methods=['GET'])
+@performance_page.route('/api/performances/<performance_id>/viewcount', methods=['GET'])
 def performance_current_views(performance_id):
     performance = FirestoreCollections.performances_ref().document(performance_id)
     current_views = performance.data['current_views']
