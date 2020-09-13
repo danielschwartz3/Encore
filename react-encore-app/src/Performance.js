@@ -1,5 +1,5 @@
 // used https://www.twilio.com/blog/2018/03/video-chat-react.html
-
+// Right now, server is local host, port 5000
 import React, { Component } from 'react';
 import Video from 'twilio-video';
 import axios from 'axios';
@@ -127,6 +127,9 @@ attachTracks(tracks, container) {
     // TODO: Add performer's tracks
     // TODO: Add any friends' tracks
     // this.attachParticipantTracks(participant, this.refs.remoteMedia)
+    fetch('127.0.0.1:5000')
+      .then(response => response.json());
+    //  .then();
 
     // Attach participant's tracks if they are with friends
     room.on('trackAdded', (track, participant) => {
@@ -143,7 +146,7 @@ attachTracks(tracks, container) {
     room.on('participantDisconnected', participant => {
         this.detachParticipantTracks(participant);
     });
-
+    
     room.on('disconnected', () => {
         if (this.state.previewTracks) {
           this.state.previewTracks.forEach(track => {
@@ -152,17 +155,47 @@ attachTracks(tracks, container) {
         }
         this.detachParticipantTracks(room.localParticipant);
         room.participants.forEach(this.detachParticipantTracks);
-        this.state.activeRoom = null;
-        this.setState({ hasJoinedRoom: false, localMediaAvailable: false });
+        this.setState({
+          activeRoom: null,
+          hasJoinedRoom: false, 
+          localMediaAvailable: false 
+        });
     });
   }
 
   leavePerformance(){
-        this.state.activeRoom.disconnect();
-        this.setState({
-            hasJoinedRoom: false,
-            localMedia: false,
-        });
+    this.state.activeRoom.disconnect();
+    this.setState({
+        hasJoinedRoom: false,
+        localMedia: false,
+    });
+  }
+
+  createPerformance(e){
+    const AccessToken = require('twilio').jwt.AccessToken;
+    const VideoGrant = AccessToken.VideoGrant;
+    const videoGrant = new VideoGrant();
+    const token = new AccessToken(
+        process.env.REACT_APP_TWILIO_ACCOUNT_SID,
+        process.env.REACT_APP_TWILIO_API_KEY,
+        process.env.REACT_APP_TWILIO_API_SECRET);
+    token.addGrant(videoGrant);
+    token.identity = this.state.identity;
+    const client = require('twilio')(process.env.REACT_APP_TWILIO_ACCOUNT_SID, token.toJwt());
+    var rooms = client.video.rooms.list({status: "in-progress"})
+    var unique = true;
+    for(var room of rooms){
+      if(room.uniqueName === e.target.value){
+        unique = false;
+      }
+    }
+    if(unique){
+      client.video.rooms.create({uniqueName: e.target.value});
+      console.log("created room: " + e.target.value);
+    }
+    else{
+      console.log("Non-unique meeting name.")
+    }
   }
 
  render() {
@@ -195,9 +228,10 @@ attachTracks(tracks, container) {
                     errortext = {this.state.roomNameError ? 'Room Name is required' : undefined} 
                 /><br />
                 {joinOrLeaveRoomButton}  {/* Show either ‘Leave Room’ or ‘Join Room’ button */}
+                <Button onClick={this.createPerformance}>Create Performance</Button> {/*Create a room if this room name is not in use */}
             </div>
             {/* 
-            The following div element shows all remote media (other                             participant’s tracks) 
+            The following div element shows all remote media (other participant’s tracks) 
             */}
             <div className="flex-item" ref="remoteMedia" id="remote-media" />
             </div>
