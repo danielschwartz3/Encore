@@ -8,7 +8,7 @@ feed_page = Blueprint('feed_page', __name__)
 def user_feed_generator(user_id):
     user = FirestoreCollections.users_ref().document(user_id)
     reccomended_performances = FirestoreCollections.performances_ref().where(
-        u'genres', u'array_contains_any', user.data['genres'])
+        u'genres', u'array_contains_any', user.get('genres'))
     if not reccomended_performances:
         reccomended_performances = FirestoreCollections.performances_ref.stream()
 

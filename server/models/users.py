@@ -32,8 +32,8 @@ def get_user(user_id):
 @user_page.route('/login', methods=['POST'])
 def do_login():
     user = FirestoreCollections.user_ref()\
-        .where(u'handle', u'===', request.form['handle'])\
-        .where(u'hashed_password', u'===', request.form['hashed_password'])
+        .where(u'handle', u'==', request.form['handle'])\
+        .where(u'hashed_password', u'==', request.form['hashed_password'])
 
     # session['logged_in'] = True if user else False
     session["user_id"] = user if user else None
@@ -74,24 +74,25 @@ def accept_friend():
     my_id = request.form['user_id']
     friend_id = request.form['friend_id']
 
-    user = FirestoreCollections.users_ref().document(my_id)
-    friends = FirestoreCollections.friends_ref().where(
-        'sent_by', '===', friend_id).where('to', '===', my_id)
-    friends.update({'active': True})
+    user_ref = FirestoreCollections.users_ref().document(my_id)
+    friend_ref = FirestoreCollections.friends_ref().where(
+        'sent_by', '==', friend_id).where('to', '==', my_id).stream()
+    for friend in friend_ref:
+        friend.update({'active': True})
     reciprocal_friends = {'sent_by': my_id, 'to': friend_id, 'active': True}
-    user.update({'friend_count': user.data['friend_count'] + 1})
+    user_ref.update({'friend_count': user_ref.get('friend_count') + 1})
     FirestoreCollections.friends_ref().add(reciprocal_friends)
 
 
 @login_required
 @user_page.route('/api/users/<user_id>/friends', methods=['GET'])
 def get_friends(user_id):
-    return {'friends': [doc.to_dict() for doc in FirestoreCollections.friends_ref().where('sent_by', '===', user_id)]}
+    return {'friends': [doc.to_dict() for doc in FirestoreCollections.friends_ref().where('sent_by', '==', user_id)]}
 
 @login_required
 @user_page.route('/api/users/<user_id>/friendcount', methods=['GET'])
 def friend_count(user_id):
-    return {'friend_count': FirestoreCollections.users_ref().document(user_id).data['friend_count']}
+    return {'friend_count': FirestoreCollections.users_ref().document(user_id).get('friend_count')}
 
 
 @login_required
@@ -99,15 +100,15 @@ def friend_count(user_id):
 def unfriend():
     my_id = request.form['user_id']
     friend_id = request.form['friend_id']
-    user = FirestoreCollections.users_ref().document(my_id)
+    user_ref = FirestoreCollections.users_ref().document(my_id)
     reciprocal_friends = FirestoreCollections.friends_ref().where(
-        'sent_by', '===', friend_id).where('to', '===', my_id)
+        'sent_by', '==', friend_id).where('to', '==', my_id)
     friends = FirestoreCollections.friends_ref().where(
-        'sent_by', '===', my_id).where('to', '===', friend_id)
+        'sent_by', '==', my_id).where('to', '==', friend_id)
 
     reciprocal_friends.update({'active': False})
     friends.update({'active': False})
-    user.update({'friend_count': user.data['friend_count'] - 1})
+    user_ref.update({'friend_count': user_ref.get('friend_count') - 1})
 
 @login_required
 @user_page.route('/api/users/add_follower', methods=['POST'])
@@ -115,7 +116,7 @@ def add_follower():
     my_id = request.form['user_id']
     follower_id = request.form['follower_id']
     
-    followers = {'sent_by': my_id, 'to': follower_id, 'active': False}
+    followers = {'sent_by': my_id, 'to': follower_id, 'active': True}
     #check if followers exists first
     FirestoreCollections.followers_ref().add(followers)
 
@@ -126,24 +127,25 @@ def accept_follower():
     my_id = request.form['user_id']
     follower_id = request.form['follower_id']
 
-    user = FirestoreCollections.users_ref().document(my_id)
+    user_ref = FirestoreCollections.users_ref().document(my_id)
     followers = FirestoreCollections.followers_ref().where(
-        'sent_by', '===', follower_id).where('to', '===', my_id)
-    followers.update({'active': True})
+        'sent_by', '==', follower_id).where('to', '==', my_id).stream()
+    for follower in followers:
+        follower.update({'active': True})
     reciprocal_followers = {'sent_by': my_id, 'to': follower_id, 'active': True}
-    user.update({'follower_count': user.data['follower_count'] + 1})
+    user_ref.update({'follower_count': user_ref.get('follower_count') + 1})
     FirestoreCollections.followers_ref().add(reciprocal_followers)
 
 
 @login_required
 @user_page.route('/api/users/<user_id>/followers', methods=['GET'])
 def get_followers(user_id):
-    return {'followers': [doc.to_dict() for doc in FirestoreCollections.followers_ref().where('sent_by', '===', user_id)]}
+    return {'followers': [doc.to_dict() for doc in FirestoreCollections.followers_ref().where('sent_by', '==', user_id)]}
 
 @login_required
 @user_page.route('/api/users/<user_id>/followercount', methods=['GET'])
 def follower_count(user_id):
-    return {'follower_count': FirestoreCollections.users_ref().document(user_id).data['follower_count']}
+    return {'follower_count': FirestoreCollections.users_ref().document(user_id).get('follower_count')}
 
 
 @login_required
@@ -151,15 +153,15 @@ def follower_count(user_id):
 def unfollow():
     my_id = request.form['user_id']
     follower_id = request.form['follower_id']
-    user = FirestoreCollections.users_ref().document(my_id)
+    user_ref = FirestoreCollections.users_ref().document(my_id)
     reciprocal_followers = FirestoreCollections.followers_ref().where(
-        'sent_by', '===', follower_id).where('to', '===', my_id)
+        'sent_by', '==', follower_id).where('to', '==', my_id)
     followers = FirestoreCollections.followers_ref().where(
-        'sent_by', '===', my_id).where('to', '===', follower_id)
+        'sent_by', '==', my_id).where('to', '==', follower_id)
 
     reciprocal_followers.update({'active': False})
     followers.update({'active': False})
-    user.update({'follower_count': user.data['follower_count'] - 1})
+    user_ref.update({'follower_count': user_ref.get('follower_count') - 1})
 
 
 class User(object):
@@ -194,8 +196,8 @@ class User(object):
     @property
     def is_authenticated(self):
         user = FirestoreCollections.user_ref()\
-            .where(u'handle', u'===', self.handle)\
-            .where(u'hashed_password', u'===', self.hashed_password)
+            .where(u'handle', u'==', self.handle)\
+            .where(u'hashed_password', u'==', self.hashed_password)
 
     @property
     def is_active(self):

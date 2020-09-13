@@ -8,7 +8,7 @@ performance_page = Blueprint('performance_page', __name__)
 @performance_page.route('/api/performances/all', methods=['GET'])
 def get_all_performances():
     if request.method == 'GET':
-        docs = FirestoreCollections.performances_ref().where(u'is_active' '===', True)
+        docs = FirestoreCollections.performances_ref().where(u'is_active' '==', True)
         return {doc.id: doc.to_dict() for doc in docs}
 
 
@@ -18,7 +18,7 @@ def create_performance():
     if request.method == 'POST':
         user_id = request.form['user_id']
         user = FirestoreCollections.users_ref().document(user_id)
-        genres = user.data['genres']
+        genres = user.get('genres')
         chat_room_id = request.form['chat_room_id']
         access_token = ""
         is_active = True
@@ -39,37 +39,37 @@ def stop_performance():
 def join_performance():
     performance_id = request.form['performance_id']
     user_id = request.form['user_id']
-    performance = FirestoreCollections.performances_ref().document(performance_id)
-    total_views = performance.data['total_views']
-    current_views = performance.data['current_views']
-    audience = performance.data['audience'].append(user_id)
-    performance.update({'audience': audience})
-    performance.update({'total_views': total_views + 1})
-    performance.update({'current_views': current_views + 1})
+    performance_ref = FirestoreCollections.performances_ref().document(performance_id)
+    total_views = performance_ref.get('total_views')
+    current_views = performance_ref.get('current_views')
+    audience = performance_ref.get('audience').append(user_id)
+    performance_ref.update({'audience': audience})
+    performance_ref.update({'total_views': total_views + 1})
+    performance_ref.update({'current_views': current_views + 1})
 
 
 @performance_page.route('/api/performances/join', methods=['POST'])
 def leave_performance():
     performance_id = request.form['performance_id']
     user_id = request.form['user_id']
-    performance = FirestoreCollections.performances_ref().document(performance_id)
-    total_views = performance.data['total_views']
-    audience = performance.data['audience']
+    performance_ref = FirestoreCollections.performances_ref().document(performance_id)
+    total_views = performance_ref.get('total_views')
+    audience = performance_ref.get('audience')
     audience.remove(user_id)
-    performance.update({'audience': audience})
-    performance.update({'total_views': total_views - 1})
+    performance_ref.update({'audience': audience})
+    performance_ref.update({'total_views': total_views - 1})
 
 
 @performance_page.route('/api/performances/<performance_id>/total_views', methods=['GET'])
 def performance_total_views(performance_id):
-    performance = FirestoreCollections.performances_ref().document(performance_id)
-    total_views = performance.data['total_views']
+    performance_ref = FirestoreCollections.performances_ref().document(performance_id)
+    total_views = performance_ref.get('total_views')
     return {'total_views': total_views}
 
 @performance_page.route('/api/performances/<performance_id>/viewcount', methods=['GET'])
 def performance_current_views(performance_id):
-    performance = FirestoreCollections.performances_ref().document(performance_id)
-    current_views = performance.data['current_views']
+    performance_ref = FirestoreCollections.performances_ref().document(performance_id)
+    current_views = performance_ref.get('current_views')
     return {'current_views': current_views}
 
 
