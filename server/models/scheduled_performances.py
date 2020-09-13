@@ -6,7 +6,7 @@ from login_required import login_required
 scheduled_performance_page = Blueprint('scheduled_performance_page', __name__)
 
 @login_required
-@scheduled_performance_page.route('/performances/schedule', methods=['POST'])
+@scheduled_performance_page.route('/api/performances/schedule', methods=['POST'])
 def schedule_performance():
     if request.method == 'POST':
         datetime = request.form['datetime']

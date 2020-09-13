@@ -23,7 +23,7 @@ def feed_generator():
 
 
 @login_required
-@feed_page.route("/feed/<user_id>/next/", methods=['GET'])
+@feed_page.route("/api/feed/<user_id>/next/", methods=['GET'])
 def get_next_user_video(user_id):
     try:
         return next(user_feed_generator(user_id))
@@ -31,7 +31,7 @@ def get_next_user_video(user_id):
         return {'id': 'end'}
 
 
-@feed_page.route("/feed/next/", methods=['GET'])
+@feed_page.route("/api/feed/next/", methods=['GET'])
 def get_next_video():
     try:
         return next(feed_generator())
